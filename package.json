@@ -1,0 +1,13 @@
+{
+  "name"          : "Nexus",
+  "description"   : "A federated user directory service for DataCosmos.",
+  "url"           : "http://github.com/auggernaut/dcNexusutils.js",
+  "keywords"      : ["nexus"],
+  "author"        : "Augustin Bralley",
+  "contributors"  : [],
+  "dependencies"  : ["express", "request", "mongodb"],
+  "engines"       : { "node": "0.6.x" },
+  "lib"           : "./lib",
+  "main"          : "index",
+  "version"       : "0.1.0"
+}

@@ -1,0 +1,6 @@
+{
+   "nexus_port": "NEXUS_PORT",
+   "mongo_user": "MONGO_USER",
+   "mongo_pass": "MONGO_PASS",
+   "mongo_url": "MONGO_URL"
+}
