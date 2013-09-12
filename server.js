@@ -9,7 +9,7 @@ var url = require('url'),
 
 
 var config = utils.loadConfig();
-var port = process.env.PORT || config.startier_port || 7777;
+var port = process.env.PORT || config.nexus_port || 7777;
 var mongoPath = "mongodb://" + config.mongo_user + ":" + config.mongo_pass + "@" + config.mongo_url;
 var stars;
 
