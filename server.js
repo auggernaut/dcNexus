@@ -2,19 +2,22 @@ var url = require('url'),
    http = require('http'),
    https = require('https'),
    express = require('express'),
-   request = require('request'),
-   utils = require('./lib/utils.js'),
+   crypto = require('crypto'),
+   nexus = require('./lib/nexus.js'),
    MongoClient = require('mongodb').MongoClient,
    app = express();
 
 
-var config = utils.loadConfig();
+var config = nexus.loadConfig();
+console.log('Configuration');
+console.log(config);
+
 var port = process.env.PORT || config.nexus_port || 7777;
-var mongoPath = "mongodb://" + config.mongo_user + ":" + config.mongo_pass + "@" + config.mongo_url;
+var mongoPath = "mongodb://" + config.mongo_user + ":" + config.mongo_pass + "@" + config.mongo_uri;
 var stars;
 
-MongoClient.connect(mongoPath, function(err, db) {
-   if(err) throw err;
+MongoClient.connect(mongoPath, function (err, db) {
+   if (err) throw err;
 
    stars = db.collection('stars');
 
@@ -26,7 +29,7 @@ app.use(express.bodyParser());
 app.listen(port, null, function (err) {
    if (err)
       console.log('Error: ' + err);
-   console.log('StarTier, at your service: http://localhost:' + port);
+   console.log('Nexus, at your service: http://localhost:' + port);
 });
 
 
@@ -39,54 +42,80 @@ app.all('*', function (req, res, next) {
 });
 
 
-app.post('/lookup', function (req, res) {
-   console.log("/lookup");
 
-   var app = req.headers.referer;
-   var assertion = req.body.assertion;
-
-   if (req.body.assertion) {
-      //AUTH WITH PERSONA
-      request.post({
-         url: 'https://login.persona.org/verify',
-         json: {
-            assertion: assertion,
-            audience: app
-         }
-      }, function (e, r, body) {
-         if (body && body.email) {
-            //Assertion accepted, user owns body.email
+app.post('/connect', function (req, res) {
 
 
-            //Lookup user
+   var newStar;
 
-            //If exists, return StarDust url
+   nexus.verify(req.headers.referer, req.body.assertion, 'https://login.persona.org/verify', function (email) {
 
-            //If doesn't exist, create user record, return default StarDust provider url
+      if (email) {
 
-            stars.insert({a:2}, function(err, docs) {
+         console.log("/connect success: " +  email);
 
-            });
+         var naut = crypto.createHash("md5").update(email).digest("hex");
 
+         stars.findOne({naut: naut}, function (err, doc) {
+            if (doc) {
+               res.json(doc);
+            }
+            else {
+               newStar = { naut: naut, host: req.body.star };
 
-            console.log(body.email);
+               stars.insert(newStar, function (err, doc) {
+                  res.json(doc[0]);
+               });
+            }
+         });
 
-            res.json({ success: body.email });
-         } else {
-            res.json({ success: false });
-         }
-      });
-   }
+      } else {
+         console.log("/connect failure: " + req.headers.referer );
+         res.json({ error: "invalid assertion" });
+      }
+
+   });
 
 });
 
 
-app.post('/test', function(req, res){
 
-   stars.insert({a:2}, function(err, docs) {
-         console.log("err: " + err);
-         console.log("docs: " + docs);
+app.post('/star', function (req, res) {
+   console.log("/star: " + req.body.naut);
+
+
+   stars.findOne({naut: req.body.naut}, function (err, doc) {
+      if (doc) {
+         res.json({star: doc.host});
+      }
+      else {
+         res.json({error: "user doesn't exist."});
+      }
    });
+
+
+});
+
+
+app.post('/test', function (req, res) {
+
+   var star = {
+      email: "augman@gmail.com",
+      star: "http://localhost:9999"
+   }
+
+   stars.insert(star, function (err, docs) {
+      console.log("err: " + err);
+      console.log("docs: " + docs);
+   });
+
+
+   stars.findOne({email: "augman@gmail.com"}, function (err, docs) {
+      console.log("err: " + err);
+      console.log("docs: " + docs);
+   });
+
+   res.json({res: "done"});
 
 
 });
