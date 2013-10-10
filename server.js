@@ -3,6 +3,7 @@ var url = require('url'),
    https = require('https'),
    express = require('express'),
    crypto = require('crypto'),
+   Sendgrid = require("sendgrid-web"),
    nexus = require('./lib/nexus.js'),
    MongoClient = require('mongodb').MongoClient,
    app = express();
@@ -45,9 +46,7 @@ app.all('*', function (req, res, next) {
 
 app.post('/connect', function (req, res) {
 
-
    var newStar;
-
    nexus.verify(req.headers.referer, req.body.assertion, 'https://login.persona.org/verify', function (email) {
 
       if (email) {
@@ -79,10 +78,8 @@ app.post('/connect', function (req, res) {
 });
 
 
-
 app.post('/star', function (req, res) {
    console.log("/star: " + req.body.naut);
-
 
    stars.findOne({naut: req.body.naut}, function (err, doc) {
       if (doc) {
@@ -92,11 +89,36 @@ app.post('/star', function (req, res) {
          res.json({error: "user doesn't exist."});
       }
    });
-
-
 });
 
 
+
+app.post('/email', function (req, res) {
+    console.log("/email: " + req.body.to);
+
+    var email = req.body;
+
+    var sendgrid = new Sendgrid({
+        user: config.sendgrid_user,
+        key: config.sendgrid_key
+    });
+
+    sendgrid.send({
+        to: email.to,
+        from: email.from,
+        subject: email.subject,
+        html: email.message
+    }, function (err) {
+        if (err) {
+            res.json({status: "error", details: err});
+        } else {
+           res.json({status: "Success"});
+        }
+    });
+});
+
+
+/*
 app.post('/test', function (req, res) {
 
    var star = {
@@ -118,6 +140,6 @@ app.post('/test', function (req, res) {
    res.json({res: "done"});
 
 
-});
+});*/
 
 

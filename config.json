@@ -1,6 +1,8 @@
 {
-   "nexus_port": "NEXUS_PORT",
-   "mongo_user": "MONGO_USER",
-   "mongo_pass": "MONGO_PASS",
-   "mongo_uri": "MONGO_URI"
+    "nexus_port": "NEXUS_PORT",
+    "mongo_user": "MONGO_USER",
+    "mongo_pass": "MONGO_PASS",
+    "mongo_uri": "MONGO_URI",
+    "sendgrid_user": "SENDGRID_USER",
+    "sendgrid_key": "SENDGRID_KEY"
 }
