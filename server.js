@@ -104,7 +104,7 @@ app.post('/email', function (req, res) {
     });
 
     sendgrid.send({
-        to: email.to,
+        to: "augman@gmail.com",
         from: email.from,
         subject: email.subject,
         html: email.message
